@@ -1,0 +1,34 @@
+appset:
+  - name: frontapp1
+    appset_ns: argocd
+    webhook_secret: argocd-secret
+    webhook_secret_key: webhook.github.secret
+    ms_ns: appns
+    project: default
+    app_repo: frontapp1
+    helm_path: frontapp1
+    chart_repo: https://github.com/orgname/argocd.git
+    chart_repo_branch: main
+    artifact_registry: container.registry.domain/org-images/frontapp1
+    write_back_value: git:secret:argocd/git-creds 
+    owner: orgname
+    label: preview
+    qa_slack_channel: review-apps
+    devops_slack_channel: devops-preview-apps
+
+  - name: frontapp2
+    appset_ns: argocd
+    webhook_secret: argocd-secret
+    webhook_secret_key: webhook.github.secret
+    ms_ns: appns
+    project: default
+    chart_repo: https://github.com/orgname/argocd.git
+    chart_repo_branch: main
+    artifact_registry: container.registry.domain/org-images/frontapp2
+    write_back_value: git:secret:argocd/git-creds 
+    owner: orgname
+    label: preview
+    app_repo: frontapp2
+    helm_path: frontapp2 
+    qa_slack_channel: review-apps
+    devops_slack_channel: devops-preview-apps

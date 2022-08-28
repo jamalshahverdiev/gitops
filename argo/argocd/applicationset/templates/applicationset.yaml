@@ -1,0 +1,64 @@
+{{- range $v := .Values.appset }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  name: {{ $v.name }}
+  namespace: {{ $v.appset_ns }}
+spec:
+  generators:
+  - pullRequest:
+      github:
+        labels:
+        - {{ $v.label }}
+        owner: {{ $v.owner }}
+        repo: {{ $v.app_repo }}
+        tokenRef:
+          key: {{ $v.webhook_secret_key }}
+          secretName: {{ $v.webhook_secret }}
+  template:
+    metadata:
+      annotations:
+        argocd-image-updater.argoproj.io/image-list: {{ $v.artifact_registry }}/{{ $v.name }}:'{{"{{"}}branch{{"}}"}}'
+        argocd-image-updater.argoproj.io/update-strategy: digest
+        argocd-image-updater.argoproj.io/write-back-method: {{ $v.write_back_value }}
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: {{ $v.qa_slack_channel }}
+        notifications.argoproj.io/subscribe.on-sync-status-unknown.slack: {{ $v.devops_slack_channel }}
+        notifications.argoproj.io/subscribe.on-sync-running.slack: {{ $v.qa_slack_channel }}
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: {{ $v.qa_slack_channel }}
+        notifications.argoproj.io/subscribe.on-created.slack: {{ $v.qa_slack_channel }}
+        notifications.argoproj.io/subscribe.on-deleted.slack: {{ $v.devops_slack_channel }}
+        notifications.argoproj.io/subscribe.on-deployed.slack: {{ $v.qa_slack_channel }}
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: {{ $v.devops_slack_channel }}
+        appsubdomain: '{{"{{"}}branch{{"}}"}}-{{"{{"}}number{{"}}"}}-{{ $v.name }}'
+      name: '{{"{{"}}branch{{"}}"}}-{{"{{"}}number{{"}}"}}'
+    spec:
+      destination:
+        namespace: {{ $v.ms_ns }}
+        server: https://kubernetes.default.svc
+      project: {{ $v.project }}
+      source:
+        helm:
+          parameters:
+          - name: environment
+            value: staging
+          - name: image.pullPolicy
+            value: Always
+          - forceString: true
+            name: image.name
+            value: {{ $v.artifact_registry }}/{{ $v.name }}
+          - forceString: true
+            name: image.tag
+            value: '{{"{{"}}branch{{"}}"}}'
+        path: {{ $v.helm_path }}/
+        repoURL: {{ $v.chart_repo }}
+        targetRevision: {{ $v.chart_repo_branch }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+{{- end }}
