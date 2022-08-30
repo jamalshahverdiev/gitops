@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        argocd-image-updater.argoproj.io/image-list: {{ $v.artifact_registry }}/{{ $v.name }}:'{{"{{"}}branch{{"}}"}}'
+        argocd-image-updater.argoproj.io/image-list: '{{ $v.artifact_registry }}/{{ $v.name }}:{{"{{"}}branch{{"}}"}}'
         argocd-image-updater.argoproj.io/update-strategy: digest
         argocd-image-updater.argoproj.io/write-back-method: {{ $v.write_back_value }}
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: {{ $v.qa_slack_channel }}
